@@ -1,16 +1,23 @@
 # StarScout
 
-Find suspicious (and possibly faked) GitHub stars at-scale. Please refer to [this paper preprint](https://arxiv.org/abs/2412.13459) for technical details and our findings:
+This repository contains the source code of StarScout, a tool to find suspicious (and possibly faked) GitHub stars at-scale. It also contains data and scripts to replicate results from the following paper:
 
-```
-@misc{he202445millionsuspectedfake,
-      title={4.5 Million (Suspected) Fake Stars in GitHub: A Growing Spiral of Popularity Contests, Scams, and Malware}, 
-      author={Hao He and Haoqin Yang and Philipp Burckhardt and Alexandros Kapravelos and Bogdan Vasilescu and Christian Kästner},
-      year={2024},
-      eprint={2412.13459},
-      archivePrefix={arXiv},
-      primaryClass={cs.CR},
-      url={https://arxiv.org/abs/2412.13459}, 
+> Hao He, Haoqin Yang, Philipp Burckhardt, Alexandros Kapravelos, Bogdan
+Vasilescu, and Christian Kästner. 2026. Six Million (Suspected) Fake Stars
+on GitHub: A Growing Spiral of Popularity Contests, Spam, and Malware.
+In 2026 IEEE/ACM 48th International Conference on Software Engineering
+(ICSE ’26), April 12–18, 2026, Rio de Janeiro, Brazil. ACM, New York, NY,
+USA, 13 pages. https://doi.org/10.1145/3744916.3764531
+
+```bibtex
+@inproceedings{he2026six,
+    title={Six Million (Suspected) Fake Stars on GitHub: A Growing Spiral of Popularity Contests, Spam, and Malware},
+    author={He, Hao and Yang, Haoqin and Burckhardt, Philipp and Kapravelos, Alexandros and Vasilescu, Bogdan and K\"{a}stner, Christian},
+    booktitle={2026 IEEE/ACM 48th International Conference on Software Engineering (ICSE '26)},
+    year={2026},
+    doi={10.1145/3744916.3764531},
+    url={https://doi.org/10.1145/3744916.3764531}
+    publisher={{ACM}},
 }
 ```
 
@@ -41,6 +48,8 @@ The scripts works with Python 3.12 and has only been tested on Ubuntu 22.04.
     npm_follower_postgres: your_postgresql_that_stores_npm_follower_dataset
     virus_total_api_key: your_virus_total_api_key
     ```
+
+    If you only want to replicate the Jupyter Notebooks, you only need to setup the MongoDB URL.
 
     If you only want to run fake star detector, you only need to setup the MongoDB URL and Google Cloud related fields (remember to configure Google Cloud [credentials](https://cloud.google.com/bigquery/docs/authentication#client-libs)). The remaining configurations are for experimental and research scripts.
 
@@ -74,10 +83,14 @@ After they finish, you should be able to see CSV files in the `data/{END_DATE}` 
 
 ## The (Suspected) Fake Stars Dataset
 
-Currently, StarScout runs on a quarterly basis and we dump the data from each quarter into `data/{END_DATE}`. We have a few utility code to generate combined data and repositories with suspected fake star campaigns in `scripts/analysis/data.py`. Other data files in the `data/` folder are updated on-demand by the paper authors.
+StarScout was executed in three different time cutoffs: 240701, 241001, 250101. The results from each run are available in the `data/{240701, 241001, 250101}` folders. Since the tool itself have evolved significantly between the runs, it is generally tricky to merge the data from three quarters, so we provide a bunch of data loading utilities in the `scripts/analysis/data.py` module. The Jupyter Notebooks from the measurement study could also serve as examples regarding how to consume and repurpose the dataset in our study.
 
 **Disclaimer.** *As we discussed in Section 3.4 and 3.5 in our paper, the resulting dataset are only repositories and users with suspected fake stars. The individual repositories and users in our dataset may be false positives. The main purpose of our dataset is for statistical analyses (which tolerates noises reasonably well), not for publicly shaming individual repositories. If you intend to publish subsequent work based on our dataset, please be aware of this limitation and its ethical implications.*
 
 ## The Measurement Study
 
-All the scripts and results from our measurement study can be found in the Jupyter Notebooks. Currently, the notebook depends on a MongoDB database which stores a large amount of data. We are actively working on it and release a public version in the future.
+All the scripts and results from our measurement study can be found in the Jupyter Notebooks. The notebook names should be mostly self-explanatory. It is worth noting that some of the notebook needs a MongoDB database with all the detailed detection results from StarScout, in order to correctly execute. The dataset dump is available at [Zenodo](https://doi.org/10.5281/zenodo.17009694) as gzip files and can be recovered using the `mongorestore` tool like this:
+
+```
+mongorestore --gzip --db fake_stars [your-downloaded-file-path]/mongodb/fake_stars/
+```
